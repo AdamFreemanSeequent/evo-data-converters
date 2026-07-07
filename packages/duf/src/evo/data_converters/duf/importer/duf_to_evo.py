@@ -28,6 +28,7 @@ from evo.objects.data import ObjectMetadata
 from evo_schemas.components import BaseSpatialDataProperties_V1_0_1, Crs_V1_0_1
 
 import evo.data_converters.duf.common.deswik_types as dw
+from .utils import ResolveObjectNameOption, ResolveObjectNameType, ConvertOptions
 from ..common import ObjectCollector
 from ..duf_reader_context import DUFCollectorContext
 from .duf_polyface_to_evo import convert_duf_polyface, combine_duf_polyfaces
@@ -74,7 +75,7 @@ def _get_converter(klass, options, count=1, warn=True):
     return converter
 
 
-def _convert_object_list(klass, objs, data_client, crs: Crs_V1_0_1, tags):
+def _convert_object_list(klass, objs, data_client, crs: Crs_V1_0_1, tags, options: ConvertOptions):
     if (converter := _get_converter(klass, CONVERTERS, len(objs))) is None:
         return []
 
@@ -84,7 +85,7 @@ def _convert_object_list(klass, objs, data_client, crs: Crs_V1_0_1, tags):
 
     geoscience_objects = []
     for i, obj in enumerate(objs):
-        geoscience_object = converter(obj, data_client, crs)
+        geoscience_object = converter(obj, data_client, crs, options)
 
         if geoscience_object:
             if geoscience_object.tags is None:
@@ -100,7 +101,11 @@ def _convert_object_list(klass, objs, data_client, crs: Crs_V1_0_1, tags):
 
 
 def _convert_and_combine_duf_objects(
-    collector: ObjectCollector, data_client: ObjectDataClient, crs: Crs_V1_0_1, tags: dict[str, str]
+    collector: ObjectCollector,
+    data_client: ObjectDataClient,
+    crs: Crs_V1_0_1,
+    tags: dict[str, str],
+    options: ConvertOptions,
 ):
     geoscience_objects = []
     for layer, objs in collector.get_objects_with_category_by_layer(dw.Category.ModelEntities).items():
@@ -122,8 +127,11 @@ def _convert_and_combine_duf_objects(
             objs_so_far.extend(valid_objs)
 
         for layer_converter, objs_to_convert in objs_to_convert_as_group.items():
+            if len(objs_to_convert) == 0:
+                logger.warning(f"Skipping conversion for converter {layer_converter} because there are 0 entities")
+                continue
             logger.info(f"Converting and combining {len(objs_to_convert)} objects using {layer_converter}.")
-            geoscience_object = layer_converter(objs_to_convert, data_client, crs)
+            geoscience_object = layer_converter(objs_to_convert, data_client, crs, options)
 
             if geoscience_object:
                 if geoscience_object.tags is None:
@@ -135,11 +143,15 @@ def _convert_and_combine_duf_objects(
 
 
 def _convert_duf_objects(
-    collector: ObjectCollector, data_client: ObjectDataClient, crs: Crs_V1_0_1, tags: dict[str, str]
+    collector: ObjectCollector,
+    data_client: ObjectDataClient,
+    crs: Crs_V1_0_1,
+    tags: dict[str, str],
+    options: ConvertOptions,
 ):
     geoscience_objects = []
     for klass, objs in collector.get_objects_with_category_by_type(dw.Category.ModelEntities).items():
-        geoscience_objects.extend(_convert_object_list(klass, objs, data_client, crs, tags))
+        geoscience_objects.extend(_convert_object_list(klass, objs, data_client, crs, tags, options))
     return geoscience_objects
 
 
@@ -155,6 +167,7 @@ async def convert_duf(
     overwrite_existing_objects: bool = False,
     *,
     coordinate_reference_system: str | int | None = None,
+    resolve_object_name: ResolveObjectNameOption | ResolveObjectNameType = ResolveObjectNameOption.DEFAULT,
 ) -> list[BaseSpatialDataProperties_V1_0_1 | ObjectMetadata]:
     """Converts a DUF file into Geoscience Objects.
 
@@ -168,6 +181,7 @@ async def convert_duf(
     :param publish_objects: (Optional) Set False to return rather than publish objects.
     :param overwrite_existing_objects: (Optional) Set True to overwrite any existing object at the upload_path.
     :param coordinate_reference_system: (Optional) Coordinate reference system: an integer or string EPSG code (e.g. ``2193`` or ``"EPSG:2193"``), an OGC WKT string, or ``None`` for unspecified.
+    :param resolve_object_name: (Optional) See description below
 
     Both epsg_code and coordinate_reference_system can't be provided, otherwise a ValueError will be raised. If neither is provided, the CRS will be set to "unspecified".
 
@@ -178,6 +192,14 @@ async def convert_duf(
     - service_manager_widget was passed to this function.
 
     If problems are encountered while loading the DUF file, these will be logged as warnings.
+
+    `resolve_object_name` controls how names are generated for any Evo objects that get generated. The way it works
+    depends on the `combine_objects_in_layers` options.
+    - DEFAULT and combine_objects_in_layers=True -> Object gets the name of the imediately enclosing Deswik layer
+    - CONCATENATE and combine_objects_in_layers=True -> As above, but the name includes all layers in the hierarchy
+    - DEFAULT and combine_objects_in_layers=False -> Each object gets the name of the Deswik entity
+    - CONCATENATE and combine_objects_in_layers=False -> As above, but the names include all layers in the hierarchy
+    - A custom resolver can also be provided
 
     :return: List of Geoscience Objects, or list of ObjectMetadata if published.
 
@@ -208,10 +230,14 @@ async def convert_duf(
     with DUFCollectorContext(filepath) as context:
         collector: ObjectCollector = context.collector
 
+    options = ConvertOptions(
+        combined=combine_objects_in_layers,
+        resolve_object_name=resolve_object_name,
+    )
     if not combine_objects_in_layers:
-        geoscience_objects = _convert_duf_objects(collector, data_client, crs, tags)
+        geoscience_objects = _convert_duf_objects(collector, data_client, crs, tags, options)
     else:
-        geoscience_objects = _convert_and_combine_duf_objects(collector, data_client, crs, tags)
+        geoscience_objects = _convert_and_combine_duf_objects(collector, data_client, crs, tags, options)
 
     objects_metadata = None
     if publish_objects:
