@@ -25,7 +25,13 @@
    "source": [
     "from evo.notebooks import ServiceManagerWidget\n",
     "\n",
-    "manager = await ServiceManagerWidget.with_auth_code(client_id=\"your-client-id\").login()"
+    "client_id = \"your-client-id\"\n",
+    "redirect_url = \"your-redirect-url\"\n",
+    "\n",
+    "manager = await ServiceManagerWidget.with_auth_code(\n",
+    "    client_id=client_id,\n",
+    "    redirect_url=redirect_url,\n",
+    ").login()"
    ]
   },
   {

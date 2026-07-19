@@ -39,8 +39,7 @@ GEOGCRS["WGS 84",
 
 
 def test_convert_{{converter_type}}_success() -> None:
-    files_path = ["dummy_file.msh"]
-    epsg_code = 4326
+    filepath = "dummy_file.txt"
     coordinate_reference_system = {"ogc_wkt": 'GEOGCRS["WGS 84"]'}
     evo_workspace_metadata = EvoWorkspaceMetadata(hub_url="http://example.com")
     tags = {"tag1": "value1"}
@@ -53,7 +52,9 @@ def test_convert_{{converter_type}}_success() -> None:
         patch(
             "evo.data_converters.{{converter_type}}.importer.{{converter_type}}_to_evo.create_evo_object_service_and_data_client"
         ) as mock_create_client,
-        patch("evo.data_converters.{{converter_type}}.importer.{{converter_type}}_to_evo._publish_{{converter_type}}_objects_sync") as mock_publish,
+        patch(
+            "evo.data_converters.{{converter_type}}.importer.{{converter_type}}_to_evo.publish_geoscience_objects_sync"
+        ) as mock_publish,
         patch(
             "evo.data_converters.{{converter_type}}.importer.utils.get_geoscience_object_from_{{converter_type}}", return_value=mock_geoscience_object
         ) as mock_get_geoscience_object,
@@ -62,9 +63,8 @@ def test_convert_{{converter_type}}_success() -> None:
         mock_publish.return_value = [mock_metadata]
 
         result = convert_{{converter_type}}(
-            files_path,
-            epsg_code,
-            evo_workspace_metadata,
+            filepath,
+            evo_workspace_metadata=evo_workspace_metadata,
             tags=tags,
             upload_path=upload_path,
             publish_objects=True,
@@ -72,13 +72,8 @@ def test_convert_{{converter_type}}_success() -> None:
         )
 
         assert result == [mock_metadata]
-        mock_get_geoscience_object.assert_called_once_with(
-            mock_create_client.return_value[1],
-            files_path,
-            epsg_code=epsg_code,
-            coordinate_reference_system=coordinate_reference_system,
-            tags=tags,
-        )
+        mock_get_geoscience_object.assert_called_once()
+        assert mock_get_geoscience_object.call_args[0][1] == filepath
         mock_publish.assert_called_once_with(
             [mock_geoscience_object],
             mock_create_client.return_value[0],
@@ -89,8 +84,7 @@ def test_convert_{{converter_type}}_success() -> None:
 
 
 def test_convert_{{converter_type}}_no_publish() -> None:
-    files_path = ["dummy_file.msh"]
-    epsg_code = 4326
+    filepath = "dummy_file.txt"
     evo_workspace_metadata = EvoWorkspaceMetadata()
     tags = {"tag1": "value1"}
     upload_path = "upload/path"
@@ -108,28 +102,26 @@ def test_convert_{{converter_type}}_no_publish() -> None:
         mock_create_client.return_value = (MagicMock(), MagicMock())
 
         result = convert_{{converter_type}}(
-            files_path, epsg_code, evo_workspace_metadata, tags=tags, upload_path=upload_path, publish_objects=False
+            filepath, evo_workspace_metadata=evo_workspace_metadata, tags=tags, upload_path=upload_path, publish_objects=False
         )
 
         assert result == [mock_geoscience_object]
 
 
 def test_convert_{{converter_type}}_missing_connection_details_error() -> None:
-    files_path = ["dummy_file.msh"]
-    epsg_code = 4326
+    filepath = "dummy_file.txt"
 
     with pytest.raises(MissingConnectionDetailsError):
-        convert_{{converter_type}}(files_path, epsg_code, publish_objects=False)
+        convert_{{converter_type}}(filepath, publish_objects=False)
 
 
 def test_convert_{{converter_type}}_conflicting_connection_details_error() -> None:
-    files_path = ["dummy_file.msh"]
-    epsg_code = 4326
+    filepath = "dummy_file.txt"
     evo_workspace_metadata = EvoWorkspaceMetadata()
     service_manager_widget = MagicMock()
 
     with pytest.raises(ConflictingConnectionDetailsError):
-        convert_{{converter_type}}(files_path, epsg_code, evo_workspace_metadata, service_manager_widget, publish_objects=False)
+        convert_{{converter_type}}(filepath, evo_workspace_metadata, service_manager_widget, publish_objects=False)
 
 
 @pytest.mark.parametrize(
@@ -142,7 +134,7 @@ def test_convert_{{converter_type}}_conflicting_connection_details_error() -> No
     ],
 )
 def test_coordinate_reference_system(input_crs, expected_crs) -> None:
-    files_path = ["dummy_file.msh"]
+    filepath = "dummy_file.txt"
     evo_workspace_metadata = EvoWorkspaceMetadata(hub_url="http://example.com")
 
     mock_geoscience_object = MagicMock(spec=BaseSpatialDataProperties_V1_0_1)
@@ -159,7 +151,7 @@ def test_coordinate_reference_system(input_crs, expected_crs) -> None:
         mock_create_client.return_value = (MagicMock(), MagicMock())
 
         convert_{{converter_type}}(
-            files_path,
+            filepath,
             evo_workspace_metadata=evo_workspace_metadata,
             coordinate_reference_system=input_crs,
             publish_objects=False,
@@ -170,12 +162,12 @@ def test_coordinate_reference_system(input_crs, expected_crs) -> None:
 
 
 def test_coordinate_reference_system_conflicts_with_epsg_code() -> None:
-    files_path = ["dummy_file.msh"]
+    filepath = "dummy_file.txt"
     evo_workspace_metadata = EvoWorkspaceMetadata(hub_url="http://example.com")
 
     with pytest.raises(ValueError, match="Both epsg_code and coordinate_reference_system were provided"):
         convert_{{converter_type}}(
-            files_path,
+            filepath,
             4326,
             evo_workspace_metadata,
             coordinate_reference_system=4326,

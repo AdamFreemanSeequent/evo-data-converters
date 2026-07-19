@@ -5,15 +5,47 @@ from copier import run_copy
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
+# ANSI escape codes for prettier terminal output.
+_BOLD = "\033[1m"
+_DIM = "\033[2m"
+_GREEN = "\033[32m"
+_CYAN = "\033[36m"
+_YELLOW = "\033[33m"
+_RESET = "\033[0m"
+
+
+def _success(message: str) -> None:
+    print(f"  {_GREEN}✓{_RESET} {message}")
+
 
 def main():
     worker = run_copy("scripts/converter_template", "packages", {"year": date.today().year})
 
     converter_name = worker.answers.combined["converter_type"]
 
+    print(f"\n{_BOLD}Updating repository configuration for {_CYAN}{converter_name}{_RESET}{_BOLD}...{_RESET}")
+
     _update_makefile(converter_name)
+    _success(f"Updated {_BOLD}Makefile{_RESET} with the {_DIM}test-{converter_name}{_RESET} target")
+
     _update_readme(converter_name)
+    _success(f"Updated {_BOLD}README.md{_RESET} with the package listing and code samples")
+
     _update_pyproject(converter_name)
+    _success(f"Updated {_BOLD}pyproject.toml{_RESET} with the workspace dependency")
+
+    _print_next_steps(converter_name)
+
+
+def _print_next_steps(converter_name: str) -> None:
+    package = f"evo-data-converters-{converter_name}"
+    print(f"\n{_BOLD}{_GREEN}Done!{_RESET} Your new converter {_CYAN}{package}{_RESET} is ready.\n")
+    print(f"{_BOLD}Next steps:{_RESET}")
+    print(f"  {_YELLOW}1.{_RESET} Review the generated package in {_DIM}packages/{converter_name}{_RESET}")
+    print(f"  {_YELLOW}2.{_RESET} Sync the workspace:            {_DIM}uv sync{_RESET}")
+    print(f"  {_YELLOW}3.{_RESET} Implement your converter in    {_DIM}packages/{converter_name}/src{_RESET}")
+    print(f"  {_YELLOW}4.{_RESET} Run the tests:                 {_DIM}make test-{converter_name}{_RESET}")
+    print()
 
 
 def _update_makefile(converter_name: str) -> None:

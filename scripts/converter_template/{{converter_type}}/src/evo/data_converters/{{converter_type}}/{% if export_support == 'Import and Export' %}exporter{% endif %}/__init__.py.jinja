@@ -9,7 +9,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from evo.data_converters.{{converter_type}}.importer.{{converter_type}}_reader import {{converter_type.upper()}}DataFileIOError, {{converter_type.upper()}}InvalidDataError
-from evo.data_converters.{{converter_type}}.importer.{{converter_type}}_to_evo import convert_{{converter_type}}
+from .evo_to_{{converter_type}} import (
+    UnsupportedObjectError,
+    export_blocksync_{{converter_type}},
+    export_{{converter_type}},
+)
 
-__all__ = ["{{converter_type.upper()}}DataFileIOError", "{{converter_type.upper()}}InvalidDataError", "convert_{{converter_type}}"]
+__all__ = ["UnsupportedObjectError", "export_blocksync_{{converter_type}}", "export_{{converter_type}}"]

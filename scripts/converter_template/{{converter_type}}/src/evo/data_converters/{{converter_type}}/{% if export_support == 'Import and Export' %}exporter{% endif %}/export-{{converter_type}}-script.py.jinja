@@ -16,10 +16,9 @@ import tempfile
 import uuid
 
 from evo.data_converters.common import EvoObjectMetadata, EvoWorkspaceMetadata
-from evo.data_converters.{{converter_type}} import {{converter_type.upper()}}Metadata
 from evo.data_converters.{{converter_type}}.exporter import export_{{converter_type}}
 
-parser = argparse.ArgumentParser(description="Export Evo Object(s) to an {{converter_type.upper()}} v1 file")
+parser = argparse.ArgumentParser(description="Export Evo Object(s) to a {{converter_type.upper()}} file")
 
 parser.add_argument("filename", help="Path of the {{converter_type.upper()}} file to create.")
 
@@ -49,11 +48,6 @@ parser.add_argument(
     help="Local directory to store downloaded files. If it doesn't exist it will be created. "
     "Defaults to a temporary directory if not provided.",
 )
-
-# {{converter_type.upper()}} metadata
-parser.add_argument("--name", help="Name to embed in the {{converter_type.upper()}} project.", default="")
-parser.add_argument("--revision", help="Revision or version to embed in the {{converter_type.upper()}} project.", default="")
-parser.add_argument("--description", help="Description of the object data to embed in the {{converter_type.upper()}} project.", default="")
 
 parser.add_argument(
     "--log-level", default=logging.INFO, help="Configure the logging level.", type=lambda x: getattr(logging, x)
@@ -96,11 +90,8 @@ for obj_str in args.object:
     objects.append(object_metadata)
     logger.debug(f"Exporting Evo object '{object_metadata.object_id}' to {{converter_type.upper()}} file '{args.filename}'")
 
-{{converter_type}}_metadata = {{converter_type.upper()}}Metadata(name=args.name, revision=args.revision, description=args.description)
-
 export_{{converter_type}}(
     args.filename,
     objects=objects,
-    {{converter_type}}_metadata={{converter_type}}_metadata,
     evo_workspace_metadata=workspace_metadata,
 )

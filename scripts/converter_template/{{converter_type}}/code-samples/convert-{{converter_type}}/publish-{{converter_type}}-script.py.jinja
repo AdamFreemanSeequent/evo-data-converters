@@ -20,7 +20,7 @@ from evo.data_converters.{{converter_type}}.importer import convert_{{converter_
 
 parser = argparse.ArgumentParser(description="Publish elements from an {{converter_type.upper()}} file to Evo")
 
-parser.add_argument("filename", help="Provide a path to an {{converter_type.upper()}} file you want to process, {{converter_type.upper()}} v1 or v2 is supported.")
+parser.add_argument("filename", help="Provide a path to a {{converter_type.upper()}} file you want to process.")
 
 parser.add_argument(
     "--epsg-code", help="EPSG code to use for the Coordinate Reference System.", required=True, type=int
