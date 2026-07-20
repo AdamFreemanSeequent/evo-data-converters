@@ -8,6 +8,9 @@ lint-fix:
 test:
 	uv run pytest .
 
+test-adamf:
+	uv run --package evo-data-converters-adamf pytest packages/adamf/tests
+
 test-common:
 	uv run --package evo-data-converters-common pytest packages/common/tests
 

@@ -24,6 +24,7 @@ The existing data converters can be used without modification or used as a templ
 
 | Package                                                 | Version                                                                                                                                                        |
 |---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [evo-data-converters-adamf](packages/adamf/README.md) | <a href="https://pypi.org/project/evo-data-converters-adamf/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/evo-data-converters-adamf" /></a> |
 | [evo-data-converters-common](packages/common/README.md) | <a href="https://pypi.org/project/evo-data-converters-common/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/evo-data-converters-common" /></a> |
 | [evo-data-converters-duf](packages/duf/README.md)       | <a href="https://pypi.org/project/evo-data-converters-duf/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/evo-data-converters-duf" /></a>       |
 | [evo-data-converters-gocad](packages/gocad/README.md)   | <a href="https://pypi.org/project/evo-data-converters-gocad/"><img alt="PyPI - Version" src="https://img.shields.io/pypi/v/evo-data-converters-gocad" /></a>   |
@@ -84,6 +85,7 @@ It should open a browser where you can open the notebooks for the current direct
 
 For examples of how to use Evo data converters, please refer to the samples in each convertor of the `packages` directory.
 
+   * [ADAMF](packages/adamf/code-samples)
    * [DUF](packages/duf/code-samples)
    * [GOCAD](packages/gocad/code-samples)
    * [Image](packages/image/code-samples)
