@@ -28,9 +28,5 @@ def test_get_geoscience_object_from_{{converter_type}}_not_implemented(mock_data
     # TODO: Replace this placeholder with tests for your get_geoscience_object_from_{{converter_type}}
     # implementation. Patch ``read_{{converter_type}}_file`` to return a fake intermediate
     # representation and assert on the returned Geoscience Object.
-    with patch(
-        "evo.data_converters.{{converter_type}}.importer.utils.read_{{converter_type}}_file",
-        side_effect=NotImplementedError,
-    ):
-        with pytest.raises(NotImplementedError):
-            get_geoscience_object_from_{{converter_type}}(mock_data_client, "dummy_file.txt", crs_from_epsg_code(4326))
+    with pytest.raises(NotImplementedError):
+        get_geoscience_object_from_{{converter_type}}(mock_data_client, "dummy_file.txt", crs_from_epsg_code(4326))
