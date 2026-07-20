@@ -8,8 +8,6 @@
     "\n",
     "This notebook shows how you can login to Evo and publish Geoscience objects from an {{converter_type.upper()}} file to your chosen workspace.\n",
     "\n",
-    "__NOTE__: For some {{converter_type.upper()}} geometry types there is more one possible way they could be converted to Geoscience Objects. An {{converter_type.upper()}} LineSet can be used to represent more than one thing (e.g. poly-lines, drillholes, a wireframe mesh, etc). In this example they are converted to LineSegments. You may want to convert them to a different Geoscience Object depending on your use case.\n",
-    "\n",
     "In this first cell we create a ServiceManagerWidget which will open a browser window and ask you to login.\n",
     "\n",
     "Once logged in, a widget will be displayed below allowing you to select an organisation and workspace to publish objects to.\n",
@@ -46,9 +44,7 @@
     "\n",
     "Then we call `convert_{{converter_type}}`, passing it the {{converter_type.upper()}} file path, EPSG code, the service manager widget from above, a path we want the published objects to appear under and finally whether we want existing objects to be overwritten.\n",
     "\n",
-    "Then we loop over the results from the `convert_{{converter_type}}` function, printing out each object that was published to Evo.\n",
-    "\n",
-    "_Note:_ Some geometry types are not yet supported. A warning will be shown for each element that could not be converted."
+    "Then we loop over the results from the `convert_{{converter_type}}` function, printing out each object that was published to Evo."
    ]
   },
   {

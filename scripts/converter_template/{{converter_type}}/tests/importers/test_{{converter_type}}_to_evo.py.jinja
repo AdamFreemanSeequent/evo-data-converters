@@ -101,9 +101,13 @@ def test_convert_{{converter_type}}_no_publish() -> None:
     ):
         mock_create_client.return_value = (MagicMock(), MagicMock())
 
-    result = convert_{{converter_type}}(
-        filepath, evo_workspace_metadata=evo_workspace_metadata, tags=tags, upload_path=upload_path, publish_objects=False
-    )
+        result = convert_{{converter_type}}(
+            filepath,
+            evo_workspace_metadata=evo_workspace_metadata,
+            tags=tags,
+            upload_path=upload_path,
+            publish_objects=False,
+        )
 
     assert result == [mock_geoscience_object]
 
@@ -155,15 +159,15 @@ def test_coordinate_reference_system(input_crs, expected_crs) -> None:
     ):
         mock_create_client.return_value = (MagicMock(), MagicMock())
 
-    convert_{{converter_type}}(
-        filepath,
-        evo_workspace_metadata=evo_workspace_metadata,
-        coordinate_reference_system=input_crs,
-        publish_objects=False,
-    )
+        convert_{{converter_type}}(
+            filepath,
+            evo_workspace_metadata=evo_workspace_metadata,
+            coordinate_reference_system=input_crs,
+            publish_objects=False,
+        )
 
-    crs_arg = mock_get_obj.call_args[0][2]
-    assert crs_arg == expected_crs
+        crs_arg = mock_get_obj.call_args[0][2]
+        assert crs_arg == expected_crs
 
 
 def test_coordinate_reference_system_conflicts_with_epsg_code() -> None:
