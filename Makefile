@@ -8,6 +8,9 @@ lint-fix:
 test:
 	uv run pytest .
 
+test-adamf:
+	uv run --package evo-data-converters-adamf pytest packages/adamf/tests
+
 test-common:
 	uv run --package evo-data-converters-common pytest packages/common/tests
 
@@ -28,6 +31,9 @@ test-omf:
 
 test-resqml:
 	uv run --package evo-data-converters-resqml pytest packages/resqml/tests
+
+test-shp:
+	uv run --package evo-data-converters-shp pytest packages/shp/tests
 
 test-ubc:
 	uv run --package evo-data-converters-ubc pytest packages/ubc/tests

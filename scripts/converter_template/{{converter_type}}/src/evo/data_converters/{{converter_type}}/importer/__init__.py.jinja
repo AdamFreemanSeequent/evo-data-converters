@@ -1,4 +1,4 @@
-#  Copyright © 2025 Bentley Systems, Incorporated
+#  Copyright © {{year}} Bentley Systems, Incorporated
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
@@ -9,7 +9,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from .importer.gocad_reader import GocadDataFileIOError, GocadInvalidDataError
-from .importer.gocad_to_evo import convert_gocad
+from evo.data_converters.{{converter_type}}.importer.{{converter_type}}_reader import {{converter_type.upper()}}DataFileIOError, {{converter_type.upper()}}InvalidDataError
+from evo.data_converters.{{converter_type}}.importer.{{converter_type}}_to_evo import convert_{{converter_type}}
 
-__all__ = ["GocadDataFileIOError", "GocadInvalidDataError", "convert_gocad"]
+__all__ = ["{{converter_type.upper()}}DataFileIOError", "{{converter_type.upper()}}InvalidDataError", "convert_{{converter_type}}"]

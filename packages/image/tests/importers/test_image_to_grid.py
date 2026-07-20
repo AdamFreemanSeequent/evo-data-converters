@@ -30,7 +30,7 @@ import pyarrow.parquet as pq
 from PIL import Image
 from pyproj import CRS
 
-from evo.data_converters.image.image_to_grid import (
+from evo.data_converters.image.importer.image_to_grid import (
     ImageGridConverter,
     geoscience_object_data_options,
     _normalize_array_data_type,

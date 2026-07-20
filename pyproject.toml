@@ -6,6 +6,8 @@ readme = { file = "README.md", content-type = "text/markdown" }
 license = { file = "LICENSE.md", content-type = "text/markdown" }
 version = "0.1.0"
 dependencies = [
+  "copier>=9.16.0",
+  "evo-data-converters-adamf",
   "evo-data-converters-common",
   "evo-data-converters-duf ; platform_system == \"Windows\"",
   "evo-data-converters-gocad",
@@ -38,6 +40,7 @@ dev = [
 ]
 
 [tool.uv.sources]
+evo-data-converters-adamf = { workspace = true }
 evo-data-converters-common = { workspace = true }
 evo-data-converters-duf = { workspace = true }
 evo-data-converters-gocad = { workspace = true }
@@ -91,3 +94,6 @@ include = ["packages"]
 
 [tool.hatch.build.targets.wheel]
 include = ["packages"]
+
+[project.scripts]
+create-converter = "scripts.create_converter:main"
