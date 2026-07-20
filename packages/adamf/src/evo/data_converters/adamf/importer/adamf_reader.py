@@ -9,7 +9,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-from typing import Any
+from collections import OrderedDict
+from dataclasses import dataclass
+
+import numpy as np
+import numpy.typing as npt
+import pandas as pd
+
+#: Names of the columns that hold point coordinates. All remaining columns are treated as attributes.
+COORDINATE_COLUMNS = ("X", "Y", "Z")
 
 
 class ADAMFInvalidDataError(Exception):
@@ -20,26 +28,59 @@ class ADAMFDataFileIOError(Exception):
     """Raised when a ADAMF file cannot be opened or read."""
 
 
-def read_adamf_file(filepath: str) -> Any:
+@dataclass
+class ADAMFData:
+    """Intermediate representation of a ADAMF file.
+
+    :param points: Array of point coordinates with shape ``(N, 3)`` holding the X, Y and Z values.
+    :param attributes: Mapping of attribute name to the pandas Series of values for that column,
+        preserving the column order from the file. Every non-coordinate column becomes an attribute.
+    """
+
+    points: npt.NDArray[np.float64]
+    attributes: "OrderedDict[str, pd.Series]"
+
+
+def read_adamf_file(filepath: str) -> ADAMFData:
     """Read a ADAMF file from disk into an intermediate representation.
 
-    This is the single entry point used by the converter to load raw data from a
-    ADAMF file. Implement the parsing for your file format here and return
-    whatever intermediate object(s) ``utils.get_geoscience_object_from_adamf`` needs
-    to build a Geoscience Object (for example: geometry arrays, attribute values, grid
-    dimensions, coordinate information, etc.).
+    A ADAMF file is a CSV file that must contain ``X``, ``Y`` and ``Z`` coordinate columns.
+    Any additional columns are read as point attributes.
 
     :param filepath: Path to the ADAMF file to read.
-    :return: An intermediate representation of the file contents. Define a return type that
-        suits your format (e.g. a dataclass, tuple, or dict).
+    :return: An :class:`ADAMFData` instance holding the point coordinates and attribute columns.
 
     :raise ADAMFDataFileIOError: If the file cannot be opened or read.
     :raise ADAMFInvalidDataError: If the file contents are invalid.
     """
-    # TODO: Implement reading and parsing of the ADAMF file.
-    #   1. Open ``filepath`` and read its contents (raise ADAMFDataFileIOError
-    #      if the file cannot be opened or read).
-    #   2. Parse the contents into an intermediate representation.
-    #   3. Validate the parsed data (raise ADAMFInvalidDataError on bad data).
-    #   4. Return the intermediate representation for the converter to use.
-    raise NotImplementedError("Implement read_adamf_file for your ADAMF file format.")
+    try:
+        input_df = pd.read_csv(filepath)
+    except FileNotFoundError as exc:
+        raise ADAMFDataFileIOError(f"Could not open ADAMF file: {filepath}") from exc
+    except pd.errors.EmptyDataError as exc:
+        raise ADAMFInvalidDataError(f"ADAMF file is empty: {filepath}") from exc
+    except (OSError, pd.errors.ParserError) as exc:
+        raise ADAMFDataFileIOError(f"Could not read ADAMF file: {filepath}") from exc
+
+    missing_columns = [column for column in COORDINATE_COLUMNS if column not in input_df.columns]
+    if missing_columns:
+        raise ADAMFInvalidDataError(
+            f"ADAMF file is missing required coordinate column(s): {', '.join(missing_columns)}"
+        )
+
+    if input_df.empty:
+        raise ADAMFInvalidDataError(f"ADAMF file contains no data rows: {filepath}")
+
+    coordinates_df = input_df[list(COORDINATE_COLUMNS)]
+    if coordinates_df.isnull().to_numpy().any():
+        raise ADAMFInvalidDataError("ADAMF file contains missing X, Y or Z coordinate values.")
+
+    points = coordinates_df.to_numpy(dtype=np.float64)
+
+    attributes: "OrderedDict[str, pd.Series]" = OrderedDict()
+    for column in input_df.columns:
+        if column in COORDINATE_COLUMNS:
+            continue
+        attributes[str(column)] = input_df[column]
+
+    return ADAMFData(points=points, attributes=attributes)
