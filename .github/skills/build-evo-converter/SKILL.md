@@ -53,7 +53,15 @@ Replace placeholder tests with real ones, then run tests, lint, and type checks.
 - **Export** (Evo → file): if scaffolded with "Import and Export", implement
   `export_<type>` / `export_blocksync_<type>` following the same reader/builder discipline in
   reverse; mirror `packages/omf`'s exporter.
-- Update the package `README.md` and add a `code-samples` example for the new format.
+- Update the package `README.md` to describe the reader library (and its license), the target
+  object type(s), and any runtime options.
+- Flesh out the generated `code-samples/convert-<type>/convert-<type>.ipynb` walkthrough — the
+  scaffold ships a bare stub pointing at a placeholder file. Point it at a real bundled sample,
+  demonstrate any runtime options, and add a `publish_objects=False` cell so it runs without Evo
+  credentials.
+- Surface runtime decisions (e.g. an `Enum` grouping option) as `--` flags in the
+  `code-samples/convert-<type>/publish-<type>-script.py` argparse CLI, and pass them through to
+  `convert_<type>`.
 
 ## Guardrails
 

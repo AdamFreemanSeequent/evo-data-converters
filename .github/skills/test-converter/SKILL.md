@@ -21,6 +21,13 @@ The scaffold creates, under `packages/<type>/tests/importers/`:
 
 Replace the two placeholder files once the reader and builder are implemented.
 
+> **`mypy` on the generated tests:** the scaffold's `test_<type>_to_evo.py` ships a parametrized
+> test whose function args are untyped (`no-untyped-def`) — annotate them (e.g.
+> `input_crs: str | int | None, expected_crs: object`). Fixtures that return a client from
+> `create_evo_object_service_and_data_client(...)[1]` trip `no-any-return` — annotate the local
+> (`data_client: ObjectDataClient = client`) before returning. If your builder now returns a
+> list, update the mocked `get_geoscience_object_from_<type>` to `return_value=[mock_object]`.
+
 ## 2. Write reader tests — `test_<type>_reader.py`
 
 - Add a small, license-clear sample file under the package's `tests/` (or reuse one from
@@ -33,6 +40,9 @@ Replace the two placeholder files once the reader and builder are implemented.
 
 - Use a mocked `ObjectDataClient` (see `test_<type>_to_evo.py` and existing converters such as
   `packages/xyz/tests` for the pattern) with a real `cache_location`, or a `tmp_path` fixture.
+  If your builder calls `data_client.save_table(...)`, a bare `MagicMock` won't work — create a
+  real client via `create_evo_object_service_and_data_client(EvoWorkspaceMetadata(workspace_id=<uuid>, cache_root=<tmp>))`
+  (the `workspace_id` must be a valid UUID or `save_table` raises `AttributeError`).
 - Assert the returned object is the expected `evo_schemas` type, that the bounding box matches
   the sample, that attribute lengths equal the element count, and that tags include
   `Source`/`Stage`/`InputType`.

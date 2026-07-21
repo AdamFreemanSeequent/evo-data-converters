@@ -94,15 +94,24 @@ uv run python -c "from evo.objects.utils.data import ObjectDataClient; help(Obje
 Run the builder against a real sample without publishing:
 
 ```python
+import tempfile
+
 from evo.data_converters.common import create_evo_object_service_and_data_client, EvoWorkspaceMetadata
 from evo.data_converters.common.crs import crs_from_epsg_code
 from evo.data_converters.<type>.importer.utils import get_geoscience_object_from_<type>
 
+# workspace_id must be a valid UUID — data_client.save_table derives the cache scope from it,
+# and a bare cache_root (without workspace_id) raises AttributeError on save_table.
 _, data_client = create_evo_object_service_and_data_client(
-    evo_workspace_metadata=EvoWorkspaceMetadata(cache_root="./data/cache")
+    evo_workspace_metadata=EvoWorkspaceMetadata(
+        workspace_id="00000000-0000-0000-0000-000000000000",
+        cache_root=tempfile.mkdtemp(),
+    )
 )
-obj = get_geoscience_object_from_<type>(data_client, "<sample>", crs_from_epsg_code(4326))
-print(type(obj).__name__, obj.bounding_box)
+result = get_geoscience_object_from_<type>(data_client, "<sample>", crs_from_epsg_code(4326))
+# The builder may return a single object or a list (see multi-object outputs below).
+for obj in (result if isinstance(result, list) else [result]):
+    print(type(obj).__name__, obj.bounding_box)
 ```
 
 ## Reference

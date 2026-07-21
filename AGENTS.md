@@ -57,8 +57,11 @@ packages/<type>/src/evo/data_converters/<type>/
 
 - `convert_<type>(...)` already creates the Evo clients, resolves the CRS, calls
   `get_geoscience_object_from_<type>`, and publishes via `publish_geoscience_objects_sync`.
-  It returns `list[BaseSpatialDataProperties_V1_0_1 | ObjectMetadata]`. **Do not change its
-  signature or the standard parameters.**
+  It returns `list[BaseSpatialDataProperties_V1_0_1 | ObjectMetadata]`. **Don't change, reorder,
+  or remove the standard parameters** — but you _may_ add new **optional keyword-only** params
+  (after the `*`, with defaults) for runtime choices such as geometry grouping.
+- `get_geoscience_object_from_<type>(...)` returns a single object, or a `list[...]` when one
+  file maps to several objects; `convert_<type>` wraps the result into the published list.
 - `read_<type>_file(filepath)` parses the file into whatever intermediate representation you
   choose; raise `<TYPE>DataFileIOError` on I/O problems and `<TYPE>InvalidDataError` on bad data.
 - `get_geoscience_object_from_<type>(data_client, filepath, coordinate_reference_system, tags)`
@@ -96,7 +99,8 @@ uv run mypy packages/<type>           # type check
 - **Never commit secrets.** Access tokens, client IDs, org/workspace IDs, and hub URLs are
   user-supplied at runtime — keep them out of code, tests, and sample data.
 - **Stay within the package pattern.** Add new format logic under `packages/<type>/`; put
-  genuinely shared helpers in `packages/common`. Don't modify the `convert_<type>` contract.
+  genuinely shared helpers in `packages/common`. Don't alter the standard `convert_<type>`
+  parameters or return type (adding optional keyword-only params is fine).
 - **Keep the Apache 2.0 license header** on every new source file (the template includes it).
 - **Prefer small, real sample data** committed under the package's `code-samples`/`tests` for
   reproducible tests; confirm licensing before committing third-party data.

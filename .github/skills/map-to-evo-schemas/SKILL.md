@@ -42,6 +42,31 @@ must:
 Keep the CRS handling in `convert_<type>` — the builder just receives and passes through
 `coordinate_reference_system`.
 
+### Multiple objects from one file
+
+A single input file may map to more than one Geoscience Object (e.g. one `TriangleMesh` per
+element type). In that case:
+
+- Have `get_geoscience_object_from_<type>` return a `list[...]` of objects.
+- In `convert_<type>`, replace the generated `geoscience_objects = [get_geoscience_object_from_<type>(...)]`
+  with an explicitly typed assignment so `mypy` doesn't flag `no-any-return`:
+  ```python
+  geoscience_objects: list[BaseSpatialDataProperties_V1_0_1 | ObjectMetadata] = list(
+      utils.get_geoscience_object_from_<type>(data_client, filepath, crs, tags)
+  )
+  ```
+- Update the generated `test_<type>_to_evo.py` mocks: `get_geoscience_object_from_<type>` must
+  now `return_value=[mock_object]` (a list), and assertions on the published list follow.
+
+### Runtime-configurable options
+
+When the user needs to choose behaviour at conversion time (e.g. how to group geometry), add an
+**optional keyword-only** parameter to `convert_<type>` (after the `*`, with a sensible default)
+and thread it through to the builder. This does not violate the "don't change the standard
+parameters" rule — you are adding, not altering, and keeping the return type. Model the option
+as an `Enum` (e.g. `class <TYPE>MeshGrouping(str, Enum)`), export it from the package
+`__init__.py`, and surface it in the code samples (see the test and after-import phases).
+
 ## 3. Upload referenced arrays
 
 Two supported patterns (see the reference file for full snippets):
