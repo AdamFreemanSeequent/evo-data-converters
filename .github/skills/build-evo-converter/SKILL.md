@@ -16,9 +16,11 @@ criteria of each phase before moving on.
 
 Skill: [`scaffold-converter`](../scaffold-converter/SKILL.md)
 
-Run `uv run create-converter`, choose the converter type and import/export mode, `uv sync`, and
-verify registration. The template generates `packages/<type>/tests/data/`; ask the user to drop
-their sample file there. **Exit:** `packages/<type>/` exists, is registered in
+Run `uv run create-converter` (pass `--converter-type <type> --export-support "Import only"` to
+run it non-interactively), `uv sync`, and verify registration. **Always** use the
+`create-converter` CLI — never call `copier` directly, or the Makefile/README/pyproject
+registrations are skipped. The template generates `packages/<type>/tests/data/`; ask the user to
+drop their sample file there. **Exit:** `packages/<type>/` exists, is registered in
 Makefile/README/pyproject, `make test-<type>` passes on the placeholder stubs, and any sample
 data is in `packages/<type>/tests/data/`.
 

@@ -21,7 +21,7 @@ later.
 
 ## 2. Run the generator
 
-From the repository root:
+From the repository root, run the CLI interactively:
 
 ```shell
 uv run create-converter
@@ -33,14 +33,18 @@ The CLI (see [`scripts/create_converter.py`](../../../scripts/create_converter.p
 `Makefile` (adds a `test-<type>` target), `README.md` (package table + code-samples list), and
 `pyproject.toml` (workspace dependency + `[tool.uv.sources]` entry).
 
-If you need it non-interactively, drive copier with the same answers:
+To run it non-interactively (recommended for agents), pass both answers as flags:
 
 ```shell
-uv run copier copy scripts/converter_template packages --data converter_type=<type> --data "export_support=Import only" --defaults
+uv run create-converter --converter-type <type> --export-support "Import only"
 ```
 
-Note: the CLI's `main()` performs the Makefile/README/pyproject updates. If you invoke copier
-directly, apply those registrations yourself (or run the CLI) so the workspace stays consistent.
+`--export-support` accepts `Import only` or `Import and Export`. When both flags are supplied,
+the CLI skips all prompts and still performs the Makefile/README/pyproject registrations.
+
+> **Always** scaffold with `uv run create-converter`. Do **not** call `copier` directly — the
+> raw copier command only renders the template and skips the Makefile/README/pyproject
+> registrations that the CLI's `main()` applies, leaving the workspace inconsistent.
 
 ## 3. Install the new package
 
